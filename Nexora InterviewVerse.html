@@ -1,0 +1,835 @@
+# Nexora InterviewVerse — Futuristic 3D AI Interview Readiness Platform
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nexora InterviewVerse</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      scroll-behavior: smooth;
+    }
+
+    :root {
+      --primary: #4f46e5;
+      --secondary: #06b6d4;
+      --accent: #8b5cf6;
+      --dark: #050816;
+      --card: rgba(255,255,255,0.08);
+      --glass: rgba(255,255,255,0.1);
+      --text: #f8fafc;
+      --muted: #cbd5e1;
+      --success: #10b981;
+      --danger: #ef4444;
+    }
+
+    body {
+      font-family: Inter, Arial, sans-serif;
+      background: radial-gradient(circle at top, #10182f, #050816 60%);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    canvas#bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -1;
+    }
+
+    nav {
+      width: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      padding: 1rem 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: blur(14px);
+      background: rgba(5,8,22,0.5);
+      z-index: 1000;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .logo {
+      font-size: 1.7rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, #60a5fa, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.5rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: 0.3s;
+    }
+
+    .nav-links a:hover {
+      color: #60a5fa;
+    }
+
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8rem 8% 4rem;
+      gap: 3rem;
+    }
+
+    .hero-text {
+      flex: 1;
+    }
+
+    .hero-text h1 {
+      font-size: 4rem;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+    }
+
+    .hero-text p {
+      color: var(--muted);
+      line-height: 1.8;
+      max-width: 650px;
+      margin-bottom: 2rem;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 14px 28px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      transition: 0.4s;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(90deg, #6366f1, #06b6d4);
+      color: white;
+      box-shadow: 0 0 25px rgba(99,102,241,0.4);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: white;
+    }
+
+    .btn:hover {
+      transform: translateY(-5px) scale(1.02);
+    }
+
+    .hero-card {
+      width: 420px;
+      background: var(--glass);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 30px;
+      padding: 2rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+      animation: float 5s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%,100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+
+    .score-circle {
+      width: 170px;
+      height: 170px;
+      border-radius: 50%;
+      margin: auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 3rem;
+      font-weight: 800;
+      background: conic-gradient(#06b6d4 0% 82%, rgba(255,255,255,0.08) 82%);
+    }
+
+    section {
+      padding: 6rem 8%;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: 2.8rem;
+      margin-bottom: 1rem;
+    }
+
+    .section-subtitle {
+      text-align: center;
+      color: var(--muted);
+      margin-bottom: 4rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(280px,1fr));
+      gap: 2rem;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      padding: 2rem;
+      backdrop-filter: blur(14px);
+      transition: 0.4s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      background: rgba(99,102,241,0.2);
+      border-radius: 50%;
+      top: -90px;
+      right: -90px;
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 45px rgba(0,0,0,0.3);
+    }
+
+    .card i {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #60a5fa;
+    }
+
+    .card h3 {
+      margin-bottom: 0.7rem;
+      font-size: 1.3rem;
+    }
+
+    .card p {
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 0.95rem;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 2rem;
+      margin-top: 4rem;
+    }
+
+    .dashboard-box {
+      background: var(--glass);
+      border-radius: 28px;
+      padding: 2rem;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .progress {
+      margin: 1.3rem 0;
+    }
+
+    .progress-title {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+
+    .bar {
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.1);
+      overflow: hidden;
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #6366f1, #06b6d4);
+    }
+
+    .timeline {
+      margin-top: 2rem;
+    }
+
+    .timeline-item {
+      border-left: 2px solid #6366f1;
+      padding-left: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .timeline-item h4 {
+      margin-bottom: 0.4rem;
+    }
+
+    .timeline-item p {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .simulation {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(300px,1fr));
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+
+    .question-box,
+    .voice-box {
+      background: var(--glass);
+      border-radius: 24px;
+      padding: 2rem;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    textarea,
+    input,
+    select {
+      width: 100%;
+      padding: 14px;
+      margin-top: 0.7rem;
+      border-radius: 14px;
+      border: none;
+      background: rgba(255,255,255,0.08);
+      color: white;
+    }
+
+    .analysis-box {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      border-radius: 20px;
+      background: rgba(16,185,129,0.15);
+      border: 1px solid rgba(16,185,129,0.3);
+      display: none;
+    }
+
+    .success-meter {
+      display: flex;
+      justify-content: center;
+      margin-top: 2rem;
+    }
+
+    .meter {
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: conic-gradient(#10b981 0% 76%, rgba(255,255,255,0.08) 76%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 30px rgba(16,185,129,0.3);
+    }
+
+    .meter-inner {
+      width: 190px;
+      height: 190px;
+      border-radius: 50%;
+      background: #08101f;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .meter-inner h1 {
+      font-size: 3rem;
+    }
+
+    .login {
+      max-width: 500px;
+      margin: auto;
+      background: var(--glass);
+      padding: 3rem;
+      border-radius: 30px;
+      border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(16px);
+    }
+
+    .login h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .login button {
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 3rem;
+      color: var(--muted);
+    }
+
+    @media(max-width: 980px) {
+      .hero {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .hero-card {
+        width: 100%;
+      }
+
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-text h1 {
+        font-size: 3rem;
+      }
+
+      .nav-links {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<nav>
+  <div class="logo">Nexora InterviewVerse</div>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#dashboard">Dashboard</a></li>
+    <li><a href="#simulation">AI Simulation</a></li>
+    <li><a href="#training">Training</a></li>
+    <li><a href="#login">Login</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <div class="hero-text">
+    <h1>Prepare. Practice. Predict. Perform.</h1>
+    <p>
+      Nexora InterviewVerse combines AI-powered interview analysis, immersive 3D experiences, live success prediction, resume intelligence, communication tracking, and virtual interview simulations into one futuristic platform.
+    </p>
+
+    <div class="hero-buttons">
+      <a href="#login" class="btn btn-primary">Launch Platform</a>
+      <a href="#features" class="btn btn-secondary">Explore Features</a>
+    </div>
+  </div>
+
+  <div class="hero-card">
+    <h2 style="text-align:center;margin-bottom:1.5rem;">AI Readiness Index</h2>
+    <div class="score-circle">82%</div>
+
+    <div class="progress">
+      <div class="progress-title">
+        <span>Technical Readiness</span>
+        <span>88%</span>
+      </div>
+      <div class="bar"><span style="width:88%"></span></div>
+    </div>
+
+    <div class="progress">
+      <div class="progress-title">
+        <span>Communication</span>
+        <span>75%</span>
+      </div>
+      <div class="bar"><span style="width:75%"></span></div>
+    </div>
+
+    <div class="progress">
+      <div class="progress-title">
+        <span>Confidence Score</span>
+        <span>83%</span>
+      </div>
+      <div class="bar"><span style="width:83%"></span></div>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <h2 class="section-title">Next-Generation Features</h2>
+  <p class="section-subtitle">Everything merged into one futuristic AI ecosystem</p>
+
+  <div class="grid">
+    <div class="card">
+      <i class="fas fa-brain"></i>
+      <h3>AI Interview Simulator</h3>
+      <p>Practice with adaptive AI interviewers that change difficulty, tone, and pressure levels in real time.</p>
+    </div>
+
+    <div class="card">
+      <i class="fas fa-chart-line"></i>
+      <h3>Success Prediction Engine</h3>
+      <p>Predict your interview success rate using technical, behavioral, communication, and portfolio analytics.</p>
+    </div>
+
+    <div class="card">
+      <i class="fas fa-microphone"></i>
+      <h3>Voice Confidence Analyzer</h3>
+      <p>Detects confidence, filler words, speaking pace, hesitation, and clarity during mock interviews.</p>
+    </div>
+
+    <div class="card">
+      <i class="fas fa-video"></i>
+      <h3>Body Language Tracking</h3>
+      <p>AI evaluates posture, facial expressions, eye contact, and engagement levels through video analysis.</p>
+    </div>
+
+    <div class="card">
+      <i class="fas fa-file-alt"></i>
+      <h3>Resume ATS Scanner</h3>
+      <p>Analyze how recruiters and ATS systems view your resume with instant optimization suggestions.</p>
+    </div>
+
+    <div class="card">
+      <i class="fas fa-route"></i>
+      <h3>Career Growth Roadmap</h3>
+      <p>Receive personalized weekly plans, learning paths, certification recommendations, and mock interview schedules.</p>
+    </div>
+
+    <div class="card">
+      <i class="fas fa-globe"></i>
+      <h3>Global Job Trend AI</h3>
+      <p>Tracks trending technologies, salary growth, hiring demand, and role competitiveness worldwide.</p>
+    </div>
+
+    <div class="card">
+      <i class="fas fa-users"></i>
+      <h3>Peer Benchmarking</h3>
+      <p>Compare your readiness score with thousands of candidates applying for similar roles.</p>
+    </div>
+  </div>
+</section>
+
+<section id="dashboard">
+  <h2 class="section-title">Interactive Readiness Dashboard</h2>
+  <p class="section-subtitle">Virtual insights that help improve your success rate</p>
+
+  <div class="dashboard">
+    <div class="dashboard-box">
+      <h3 style="margin-bottom:2rem;">Performance Analytics</h3>
+
+      <div class="progress">
+        <div class="progress-title">
+          <span>DSA & Problem Solving</span>
+          <span>92%</span>
+        </div>
+        <div class="bar"><span style="width:92%"></span></div>
+      </div>
+
+      <div class="progress">
+        <div class="progress-title">
+          <span>System Design</span>
+          <span>79%</span>
+        </div>
+        <div class="bar"><span style="width:79%"></span></div>
+      </div>
+
+      <div class="progress">
+        <div class="progress-title">
+          <span>HR & Behavioral</span>
+          <span>84%</span>
+        </div>
+        <div class="bar"><span style="width:84%"></span></div>
+      </div>
+
+      <div class="progress">
+        <div class="progress-title">
+          <span>Confidence & Fluency</span>
+          <span>73%</span>
+        </div>
+        <div class="bar"><span style="width:73%"></span></div>
+      </div>
+
+      <div class="timeline">
+        <h3 style="margin-bottom:1rem;">Personal AI Roadmap</h3>
+
+        <div class="timeline-item">
+          <h4>Week 1 — Resume Optimization</h4>
+          <p>Improve ATS score, measurable achievements, and technical keyword alignment.</p>
+        </div>
+
+        <div class="timeline-item">
+          <h4>Week 2 — Communication Training</h4>
+          <p>Practice storytelling, STAR responses, and executive-level communication.</p>
+        </div>
+
+        <div class="timeline-item">
+          <h4>Week 3 — Mock Interview Battles</h4>
+          <p>Participate in AI-vs-user simulations with pressure handling and rapid questioning.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-box">
+      <h3 style="text-align:center;">Virtual Success Probability</h3>
+
+      <div class="success-meter">
+        <div class="meter">
+          <div class="meter-inner">
+            <h1>76%</h1>
+            <p>Success Rate</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:2rem;">
+        <h4 style="margin-bottom:1rem;">AI Insights</h4>
+        <p style="color:var(--muted);line-height:1.8;">
+          Your strongest area is technical clarity. The AI predicts higher success if you improve concise storytelling and mock interview consistency.
+        </p>
+      </div>
+
+      <div style="margin-top:2rem;">
+        <h4 style="margin-bottom:1rem;">Recommended Certifications</h4>
+        <ul style="line-height:2;color:var(--muted);padding-left:1rem;">
+          <li>AWS Cloud Practitioner</li>
+          <li>System Design Fundamentals</li>
+          <li>Advanced DSA Practice</li>
+          <li>Behavioral Interview Mastery</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="simulation">
+  <h2 class="section-title">Virtual AI Interview Arena</h2>
+  <p class="section-subtitle">Practice in an immersive futuristic environment</p>
+
+  <div class="simulation">
+    <div class="question-box">
+      <h3>AI Mock Question</h3>
+      <p style="margin:1rem 0;color:var(--muted);">
+        Explain a situation where you solved a challenging technical problem under pressure.
+      </p>
+
+      <textarea id="answer" placeholder="Write your answer here..."></textarea>
+
+      <button class="btn btn-primary" style="margin-top:1.2rem;width:100%;" onclick="analyzeAnswer()">
+        Analyze My Answer
+      </button>
+
+      <div class="analysis-box" id="analysisBox">
+        <h4>AI Feedback</h4>
+        <p style="margin-top:0.7rem;line-height:1.8;">
+          Strong problem-solving explanation detected. Add measurable impact and team collaboration details to increase your score by 12%.
+        </p>
+      </div>
+    </div>
+
+    <div class="voice-box">
+      <h3>Train Yourself Better</h3>
+
+      <div style="margin-top:1.5rem;line-height:2;">
+        <p>✅ Daily HR Mock Sessions</p>
+        <p>✅ DSA Speed Challenges</p>
+        <p>✅ System Design Rooms</p>
+        <p>✅ Resume Review Battles</p>
+        <p>✅ Confidence & Speaking Training</p>
+        <p>✅ AI Group Discussion Simulator</p>
+        <p>✅ Interview Heatmap Analytics</p>
+      </div>
+
+      <div style="margin-top:2rem;">
+        <h4>Smart Virtual Features</h4>
+        <ul style="padding-left:1rem;line-height:2;color:var(--muted);">
+          <li>3D interview rooms</li>
+          <li>Live eye-contact tracker</li>
+          <li>Stress response analytics</li>
+          <li>Virtual recruiter avatars</li>
+          <li>Gamified interview challenges</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="training">
+  <h2 class="section-title">Smart Learning Ecosystem</h2>
+  <p class="section-subtitle">Personalized training built around your weaknesses</p>
+
+  <div class="grid">
+    <div class="card">
+      <i class="fas fa-laptop-code"></i>
+      <h3>Technical Labs</h3>
+      <p>Hands-on coding rooms, debugging arenas, and system design simulators for real interview practice.</p>
+    </div>
+
+    <div class="card">
+      <i class="fas fa-comments"></i>
+      <h3>Communication Coaching</h3>
+      <p>Improve articulation, storytelling, persuasion, and leadership communication through AI coaching.</p>
+    </div>
+
+    <div class="card">
+      <i class="fas fa-trophy"></i>
+      <h3>Gamified Leaderboards</h3>
+      <p>Earn XP, unlock achievements, and compete with peers in interview readiness challenges.</p>
+    </div>
+
+    <div class="card">
+      <i class="fas fa-robot"></i>
+      <h3>AI Mentor Assistant</h3>
+      <p>Get 24/7 personalized mentorship for resumes, projects, mock interviews, and career planning.</p>
+    </div>
+  </div>
+</section>
+
+<section id="login">
+  <h2 class="section-title">Access Your AI Career Universe</h2>
+  <p class="section-subtitle">Login and continue your interview preparation journey</p>
+
+  <div class="login">
+    <h2>Login to Nexora</h2>
+
+    <input type="text" placeholder="Full Name" />
+    <input type="email" placeholder="Email Address" />
+    <input type="password" placeholder="Password" />
+
+    <select>
+      <option>Select Your Role</option>
+      <option>Software Engineer</option>
+      <option>Data Scientist</option>
+      <option>Product Manager</option>
+      <option>UX Designer</option>
+      <option>Cybersecurity Analyst</option>
+    </select>
+
+    <button class="btn btn-primary">Login / Create Account</button>
+
+    <p style="margin-top:1rem;text-align:center;color:var(--muted);">
+      Continue with Google · GitHub · LinkedIn
+    </p>
+  </div>
+</section>
+
+<footer>
+  <h2 style="margin-bottom:1rem;">Nexora InterviewVerse</h2>
+  <p>Future-ready AI platform for interview success, career growth, and immersive virtual preparation.</p>
+</footer>
+
+<script>
+  const canvas = document.getElementById('bg');
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+
+  const geometry = new THREE.TorusKnotGeometry(10, 3, 100, 16);
+  const material = new THREE.MeshStandardMaterial({
+    color: 0x6366f1,
+    wireframe: true
+  });
+
+  const torus = new THREE.Mesh(geometry, material);
+  scene.add(torus);
+
+  const light = new THREE.PointLight(0xffffff, 2);
+  light.position.set(20,20,20);
+  scene.add(light);
+
+  camera.position.z = 35;
+
+  function animate() {
+    requestAnimationFrame(animate);
+
+    torus.rotation.x += 0.003;
+    torus.rotation.y += 0.004;
+
+    renderer.render(scene, camera);
+  }
+
+  animate();
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  function analyzeAnswer() {
+    document.getElementById('analysisBox').style.display = 'block';
+  }
+</script>
+
+<!-- Code injected by live-server -->
+<script>
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function () {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					var parent = elem.parentElement || head;
+					parent.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					parent.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function (msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+				console.log('Live reload enabled.');
+				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+			}
+		})();
+	}
+	else {
+		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+	}
+	// ]]>
+</script>
+</body>
+</html>
+```
+
+## Added Advanced Features
+
+* Fully merged both uploaded platforms into one futuristic ecosystem
+* Added 3D animated background using Three.js
+* Added AI Success Probability Meter
+* Added immersive dashboard analytics
+* Added personalized learning ecosystem
+* Added virtual interview simulator
+* Added AI roadmap and certification guidance
+* Added modern glassmorphism UI
+* Added login/signup system design
+* Added gamified learning and recruiter simulation concepts
+* Added virtual training ecosystem and confidence analytics
